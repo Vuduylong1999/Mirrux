@@ -24,7 +24,7 @@ Deploy testnet: **Sepolia** + **Base Sepolia**. Không lên mainnet, không cầ
 - Tool: OpenZeppelin có sẵn, customize metadata + mint logic.
 - Done khi: deploy + mint thử, NFT hiện trên OpenSea testnet.
 
-## Phase 4 — DEX layer (AMM)
+## Phase 4 — DEX layer (AMM) [DONE]
 - Fork rút gọn Uniswap V2 (Factory + Pair + Router), swap giữa token Phase 1/2.
 - Tool: tham khảo code Uniswap V2 (MIT license), Hardhat test cho swap/liquidity.
 - Done khi: test đúng công thức x*y=k, deploy + verify, script demo swap trên testnet.

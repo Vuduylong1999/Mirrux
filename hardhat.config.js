@@ -27,6 +27,10 @@ module.exports = {
       // OpenZeppelin v5.6 dùng opcode "mcopy" (chỉ có từ bản nâng cấp Cancun của Ethereum),
       // nếu để evmVersion cũ hơn (vd "paris") thì compile sẽ báo lỗi "mcopy not found".
       evmVersion: "cancun",
+      // viaIR: bật pipeline biên dịch mới (qua bước trung gian "Yul IR") thay vì sinh bytecode
+      // trực tiếp — cần thiết vì MirruxRouter.swapExactTokensForTokens() có quá nhiều biến local
+      // cùng lúc, vượt quá 16 "slot" mà EVM cho phép ở chế độ biên dịch cũ ("stack too deep").
+      viaIR: true,
     },
   },
   // Khai báo các mạng blockchain mà Hardhat có thể kết nối tới khi chạy lệnh --network <tên>.
