@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mirrux — Web3 Demo</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  .card { border: 1px solid #8884; border-radius: 8px; padding: 16px; margin: 16px 0; }
+  button { padding: 8px 14px; border-radius: 6px; border: 1px solid #8884; cursor: pointer; font-size: 0.95rem; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  input { padding: 6px 8px; border-radius: 6px; border: 1px solid #8884; width: 140px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .muted { opacity: 0.7; font-size: 0.85rem; }
+  .addr { font-family: monospace; word-break: break-all; }
+  #log { white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; max-height: 160px; overflow-y: auto; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+
+<h1>Mirrux — live demo on Sepolia</h1>
+<p class="muted">
+  Dashboard đọc trực tiếp state on-chain của các contract Mirrux (không cần ví), và cho phép
+  gửi transaction thật (approve + deposit vào ERC-4626 vault) nếu bạn có ví MetaMask với MRX testnet.
+  Contract source &amp; verify link: <a href="../README.md">README</a>.
+</p>
+
+<div class="card">
+  <div class="row">
+    <button id="connectBtn">Kết nối MetaMask</button>
+    <span id="account" class="addr muted">chưa kết nối</span>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Đọc state on-chain (read-only, không cần ví)</h3>
+  <div class="row">MRX total supply: <b id="mrxSupply">…</b></div>
+  <div class="row">Vault (vMRX) total assets: <b id="vaultAssets">…</b> MRX</div>
+  <div class="row">Vault total shares: <b id="vaultShares">…</b> vMRX</div>
+  <div class="row">Tỷ giá 1 vMRX = <b id="vaultRate">…</b> MRX</div>
+</div>
+
+<div class="card">
+  <h3>Số dư của ví bạn</h3>
+  <div class="row">MRX: <b id="myMrx">—</b></div>
+  <div class="row">vMRX: <b id="myVmrx">—</b></div>
+</div>
+
+<div class="card">
+  <h3>Gửi transaction thật: Deposit MRX vào Vault</h3>
+  <p class="muted">2 bước on-chain: approve (cho phép vault rút MRX) rồi deposit. Cần ví có MRX testnet trên Sepolia.</p>
+  <div class="row">
+    <input id="depositAmount" type="number" placeholder="số MRX" min="0" step="any" />
+    <button id="approveBtn" disabled>1. Approve</button>
+    <button id="depositBtn" disabled>2. Deposit</button>
+  </div>
+  <div id="log" class="muted"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<script>
+const SEPOLIA_CHAIN_ID = "0xaa36a7";
+const PUBLIC_RPC = "https://rpc.sepolia.org";
+
+const MRX_ADDRESS = "0x7105cC28Df810dd63bdba3aF30D18f2187657631";
+const VAULT_ADDRESS = "0x78C87519D32d0126b3d82955b412f4371783B94C";
+
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function totalSupply() view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+  "function allowance(address,address) view returns (uint256)",
+];
+const VAULT_ABI = ERC20_ABI.concat([
+  "function totalAssets() view returns (uint256)",
+  "function convertToAssets(uint256) view returns (uint256)",
+  "function deposit(uint256,address) returns (uint256)",
+]);
+
+const readProvider = new ethers.JsonRpcProvider(PUBLIC_RPC);
+const mrxRead = new ethers.Contract(MRX_ADDRESS, ERC20_ABI, readProvider);
+const vaultRead = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, readProvider);
+
+let signer = null;
+let account = null;
+
+const log = (msg) => {
+  const el = document.getElementById("log");
+  el.textContent += msg + "\n";
+  el.scrollTop = el.scrollHeight;
+};
+
+async function loadPublicStats() {
+  const [supply, decimals, vaultAssets, vaultShares] = await Promise.all([
+    mrxRead.totalSupply(),
+    mrxRead.decimals(),
+    vaultRead.totalAssets(),
+    vaultRead.totalSupply(),
+  ]);
+  document.getElementById("mrxSupply").textContent = ethers.formatUnits(supply, decimals);
+  document.getElementById("vaultAssets").textContent = ethers.formatUnits(vaultAssets, decimals);
+  document.getElementById("vaultShares").textContent = ethers.formatUnits(vaultShares, decimals);
+
+  const oneShare = ethers.parseUnits("1", decimals);
+  const rate = vaultShares > 0n ? await vaultRead.convertToAssets(oneShare) : oneShare;
+  document.getElementById("vaultRate").textContent = ethers.formatUnits(rate, decimals);
+}
+
+async function loadMyBalances() {
+  if (!account) return;
+  const decimals = await mrxRead.decimals();
+  const [mrxBal, vmrxBal] = await Promise.all([
+    mrxRead.balanceOf(account),
+    vaultRead.balanceOf(account),
+  ]);
+  document.getElementById("myMrx").textContent = ethers.formatUnits(mrxBal, decimals);
+  document.getElementById("myVmrx").textContent = ethers.formatUnits(vmrxBal, decimals);
+}
+
+async function ensureSepolia() {
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: SEPOLIA_CHAIN_ID }],
+    });
+  } catch (err) {
+    if (err.code === 4902) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: SEPOLIA_CHAIN_ID,
+          chainName: "Sepolia",
+          nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
+          rpcUrls: [PUBLIC_RPC],
+          blockExplorerUrls: ["https://sepolia.etherscan.io"],
+        }],
+      });
+    } else {
+      throw err;
+    }
+  }
+}
+
+async function connect() {
+  if (!window.ethereum) {
+    alert("Cần cài MetaMask để gửi transaction (phần đọc state vẫn hoạt động bình thường).");
+    return;
+  }
+  await ensureSepolia();
+  const browserProvider = new ethers.BrowserProvider(window.ethereum);
+  const accounts = await browserProvider.send("eth_requestAccounts", []);
+  account = accounts[0];
+  signer = await browserProvider.getSigner();
+
+  document.getElementById("account").textContent = account;
+  document.getElementById("approveBtn").disabled = false;
+  document.getElementById("depositBtn").disabled = false;
+  await loadMyBalances();
+}
+
+async function approve() {
+  const decimals = await mrxRead.decimals();
+  const amount = ethers.parseUnits(document.getElementById("depositAmount").value || "0", decimals);
+  const mrxWrite = new ethers.Contract(MRX_ADDRESS, ERC20_ABI, signer);
+  log(`Sending approve(${amount})...`);
+  const tx = await mrxWrite.approve(VAULT_ADDRESS, amount);
+  log(`tx: ${tx.hash}`);
+  await tx.wait();
+  log("Approve confirmed.");
+}
+
+async function deposit() {
+  const decimals = await mrxRead.decimals();
+  const amount = ethers.parseUnits(document.getElementById("depositAmount").value || "0", decimals);
+  const vaultWrite = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, signer);
+  log(`Sending deposit(${amount})...`);
+  const tx = await vaultWrite.deposit(amount, account);
+  log(`tx: ${tx.hash}`);
+  await tx.wait();
+  log("Deposit confirmed.");
+  await loadMyBalances();
+  await loadPublicStats();
+}
+
+document.getElementById("connectBtn").addEventListener("click", () => connect().catch((e) => log("Error: " + e.message)));
+document.getElementById("approveBtn").addEventListener("click", () => approve().catch((e) => log("Error: " + e.message)));
+document.getElementById("depositBtn").addEventListener("click", () => deposit().catch((e) => log("Error: " + e.message)));
+
+loadPublicStats().catch((e) => log("Error loading stats: " + e.message));
+</script>
+
+</body>
+</html>
