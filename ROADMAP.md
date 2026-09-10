@@ -19,7 +19,7 @@ Deploy testnet: **Sepolia** + **Base Sepolia**. Không lên mainnet, không cầ
 - Tool: OpenZeppelin `AccessControl`, tự viết registry (~100-150 dòng), tham khảo interface chuẩn ERC-3643.
 - Done khi: test transfer thành công giữa 2 ví whitelist, revert khi ví không whitelist; README giải thích luồng KYC/whitelist.
 
-## Phase 3 — NFT chuẩn (ERC-721 + ERC-1155)
+## Phase 3 — NFT chuẩn (ERC-721 + ERC-1155) [DONE]
 - ERC-721: đại diện 1 tài sản duy nhất. ERC-1155: nhiều loại tài sản/fraction.
 - Tool: OpenZeppelin có sẵn, customize metadata + mint logic.
 - Done khi: deploy + mint thử, NFT hiện trên OpenSea testnet.
