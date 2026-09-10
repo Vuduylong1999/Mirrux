@@ -36,7 +36,15 @@ Deploy testnet: **Sepolia** + **Base Sepolia**. Không lên mainnet, không cầ
 - Done khi: 1 tx demo qua UserOperation thành công, có log/screenshot.
 - Cắt phase này đầu tiên nếu thiếu thời gian.
 
-## Phase 6 — ZK integration
+## Phase 6 — ZK integration [DONE]
+
+Ghi chú setup (chỉ cần làm lại nếu clone repo sang máy khác): Node.js bản mới (v24+) có lỗi
+tương thích khiến plugin `@matterlabs/hardhat-zksync-solc` không tự tải được 2 binary compiler
+(zksolc + era-solc/zkvm-solc). Cách khắc phục thủ công:
+1. Tải zksolc: `https://github.com/matter-labs/era-compiler-solidity/releases/download/1.5.7/zksolc-windows-amd64-gnu-v1.5.7.exe` → lưu vào `.zksolc-bin/zksolc-v1.5.7.exe`.
+2. Tải era-solc: `https://github.com/matter-labs/era-solidity/releases/download/0.8.24-1.0.1/solc-windows-amd64-0.8.24-1.0.1.exe` → đặt (không đuôi `.exe`, đúng tên
+   `zkvm-solc-v0.8.24-1.0.1`) vào thư mục cache của Hardhat: `%LOCALAPPDATA%\hardhat-nodejs\Cache\compilers-v2\zkvm-solc\`.
+3. `hardhat.config.js` đã trỏ `zksolc.settings.compilerPath` vào file ở bước 1 bằng absolute path (`path.join(__dirname, ...)`) — bắt buộc absolute vì cmd.exe trên Windows không hiểu path kiểu Unix (`./...`).
 - Không tự viết circuit ZK. Deploy 1 contract (ERC-20 hoặc vault) lên zkSync Era Sepolia testnet.
 - Tool: `@matterlabs/hardhat-zksync`, zkSync Sepolia testnet + faucet.
 - Done khi: verify trên zkSync explorer; README ghi rõ khác biệt deploy ZK-rollup vs EVM thường (trả lời câu "technical challenge" trong JD).

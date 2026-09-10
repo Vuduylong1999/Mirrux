@@ -1,8 +1,13 @@
 node_modules
 .env
 artifacts
+artifacts-zk
 cache
+cache-zk
 coverage
 coverage.json
 typechain
 typechain-types
+# Binary compiler tự tải thủ công (zksolc + era-solc) — nặng (~60MB), ai clone repo tự tải lại
+# theo hướng dẫn trong ROADMAP.md thay vì lưu binary vào git.
+.zksolc-bin
