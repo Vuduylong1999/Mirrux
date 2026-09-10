@@ -14,7 +14,7 @@ Deploy testnet: **Sepolia** + **Base Sepolia**. Không lên mainnet, không cầ
 - Tool: OpenZeppelin `ERC20.sol`, `ERC4626.sol`, Hardhat test (Chai/Mocha).
 - Done khi: test coverage ≥90%, deploy verify trên cả 2 network, có script deposit/withdraw demo.
 
-## Phase 2 — Permissioned token (ERC-3643, RWA) — điểm nhấn khác biệt
+## Phase 2 — Permissioned token (ERC-3643, RWA) — điểm nhấn khác biệt [DONE]
 - Token có whitelist (Identity Registry rút gọn), admin role add/remove whitelist.
 - Tool: OpenZeppelin `AccessControl`, tự viết registry (~100-150 dòng), tham khảo interface chuẩn ERC-3643.
 - Done khi: test transfer thành công giữa 2 ví whitelist, revert khi ví không whitelist; README giải thích luồng KYC/whitelist.
