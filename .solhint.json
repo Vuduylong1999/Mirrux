@@ -1,0 +1,12 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "use-natspec": "off",
+    "gas-custom-errors": "off",
+    "gas-small-strings": "off",
+    "gas-indexed-events": "off",
+    "gas-strict-inequalities": "off",
+    "no-global-import": "off",
+    "reason-string": "off"
+  }
+}

@@ -1,0 +1,38 @@
+# GitHub Actions: tự động chạy mỗi khi có "push" hoặc "pull request" nhắm vào nhánh main —
+# đảm bảo code mới không làm hỏng test/contract đã có TRƯỚC KHI merge, không cần tự chạy tay
+# `npm test` mỗi lần rồi mới nhớ ra quên chạy.
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout: tải code của repo vào máy ảo CI (mặc định máy ảo trống, không có gì).
+      - uses: actions/checkout@v4
+
+      # Cài Node.js đúng phiên bản LTS ổn định (18.x) — dùng bản này thay vì bản mới nhất vì
+      # phase ZK (zksync-solc) gặp lỗi tương thích với Node quá mới ở máy dev cục bộ; CI chạy
+      # Linux nên không dính lỗi download binary kiểu Windows, nhưng vẫn ghim Node bản ổn định
+      # cho nhất quán.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      # npm ci (thay vì npm install): cài ĐÚNG PHIÊN BẢN đã ghi trong package-lock.json, không
+      # tự ý cập nhật lên bản mới hơn — đảm bảo CI luôn tái lập được đúng môi trường mà dev
+      # local đã test qua, tránh trường hợp "chạy được trên máy tôi" nhưng CI lại fail vì
+      # 1 dependency vô tình lên version mới có breaking change.
+      - run: npm ci
+
+      # solhint chỉ cảnh báo (warning), không có lỗi (error) nào ở thời điểm viết workflow này —
+      # nên bước lint này thất bại (CI đỏ) CHỈ KHI có ai đó thêm code vi phạm 1 rule nghiêm trọng
+      # (error), không bị chặn bởi các gợi ý style/gas vặt vãnh.
+      - run: npm run lint
+
+      - run: npm test

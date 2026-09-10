@@ -49,7 +49,7 @@ tương thích khiến plugin `@matterlabs/hardhat-zksync-solc` không tự tả
 - Tool: `@matterlabs/hardhat-zksync`, zkSync Sepolia testnet + faucet.
 - Done khi: verify trên zkSync explorer; README ghi rõ khác biệt deploy ZK-rollup vs EVM thường (trả lời câu "technical challenge" trong JD).
 
-## Phase 7 — CI/CD + polish
+## Phase 7 — CI/CD + polish [DONE]
 - GitHub Actions chạy test + lint mỗi push. README tổng hợp kiến trúc + link deploy mọi contract trên mọi network.
 - Tool: GitHub Actions (free), Solhint / Foundry `forge fmt`.
 - Done khi: badge tests passing xanh, mọi contract có link verify click được.
