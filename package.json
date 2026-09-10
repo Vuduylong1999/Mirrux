@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Vuduylong1999/Mirrux#readme",
   "devDependencies": {
+    "@account-abstraction/contracts": "^0.7.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.6.1",
     "dotenv": "^17.4.2",

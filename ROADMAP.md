@@ -30,7 +30,7 @@ Deploy testnet: **Sepolia** + **Base Sepolia**. Không lên mainnet, không cầ
 - Done khi: test đúng công thức x*y=k, deploy + verify, script demo swap trên testnet.
 - Cắt bớt nếu gấp thời gian: chỉ làm Pair+Router, bỏ Factory phức tạp.
 
-## Phase 5 — Account Abstraction (ERC-4337) — optional
+## Phase 5 — Account Abstraction (ERC-4337) — optional [DONE]
 - Không viết EntryPoint từ đầu, dùng Alchemy Account Kit / Stackup. 1 Smart Account contract đơn giản.
 - Tool: `@account-abstraction/contracts`, Alchemy AA SDK, bundler testnet free.
 - Done khi: 1 tx demo qua UserOperation thành công, có log/screenshot.
