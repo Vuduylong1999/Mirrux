@@ -4,66 +4,176 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mirrux — Web3 Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: light dark; }
-  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.5; }
-  h1 { font-size: 1.4rem; }
-  .card { border: 1px solid #8884; border-radius: 8px; padding: 16px; margin: 16px 0; }
-  button { padding: 8px 14px; border-radius: 6px; border: 1px solid #8884; cursor: pointer; font-size: 0.95rem; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  input { padding: 6px 8px; border-radius: 6px; border: 1px solid #8884; width: 140px; }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
-  .muted { opacity: 0.7; font-size: 0.85rem; }
-  .addr { font-family: monospace; word-break: break-all; }
-  #log { white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; max-height: 160px; overflow-y: auto; }
-  a { color: inherit; }
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d12;
+    --bg-soft: #12151d;
+    --card: #151922;
+    --border: #262b38;
+    --text: #e7e9ee;
+    --muted: #8a92a6;
+    --accent: #7c8cff;
+    --accent-2: #4de1c1;
+    --danger: #ff6b6b;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1b2140 0%, transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, #10241f 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 48px 20px 80px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  header.hero { margin-bottom: 32px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent-2); background: #4de1c11a; border: 1px solid #4de1c140;
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 14px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }
+  h1 { font-size: 1.9rem; font-weight: 700; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); font-size: 0.95rem; max-width: 60ch; }
+  .lede a { color: var(--accent); text-decoration: none; border-bottom: 1px solid #7c8cff55; }
+  .lede a:hover { border-bottom-color: var(--accent); }
+
+  .card {
+    background: linear-gradient(180deg, var(--card), var(--bg-soft));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 0 #ffffff08 inset, 0 12px 30px -18px #000a;
+  }
+  .card h3 {
+    margin: 0 0 4px; font-size: 0.95rem; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card .hint { color: var(--muted); font-size: 0.82rem; margin: 4px 0 16px; }
+
+  .wallet-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .wallet-status { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .status-dot.on { background: var(--accent-2); box-shadow: 0 0 0 4px #4de1c11f; }
+  .addr {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--muted);
+    background: #ffffff08; padding: 4px 9px; border-radius: 8px; cursor: default;
+  }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .stat {
+    background: #ffffff05; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .label { font-size: 0.76rem; color: var(--muted); margin-bottom: 6px; }
+  .stat .value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 500; }
+  .stat .unit { font-size: 0.8rem; color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+  button {
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    padding: 10px 18px; border-radius: 9px; border: 1px solid transparent; cursor: pointer;
+    transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease;
+  }
+  button:active:not(:disabled) { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #0b0d12; }
+  .btn-primary:hover:not(:disabled) { background: #92a0ff; }
+  .btn-secondary { background: transparent; border-color: var(--border); color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); }
+
+  .deposit-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  input[type="number"] {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+    background: #ffffff08; border: 1px solid var(--border); color: var(--text);
+    padding: 10px 12px; border-radius: 9px; width: 150px;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+
+  #log {
+    margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    background: #00000055; border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; max-height: 160px; overflow-y: auto; color: var(--muted);
+    white-space: pre-wrap;
+  }
+  #log:empty::before { content: 'Chưa có hoạt động nào.'; opacity: 0.6; }
+  #log .err { color: var(--danger); }
+  #log .ok { color: var(--accent-2); }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 40px; }
+  footer a { color: inherit; }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<h1>Mirrux — live demo on Sepolia</h1>
-<p class="muted">
-  Dashboard đọc trực tiếp state on-chain của các contract Mirrux (không cần ví), và cho phép
-  gửi transaction thật (approve + deposit vào ERC-4626 vault) nếu bạn có ví MetaMask với MRX testnet.
-  Contract source &amp; verify link: <a href="../README.md">README</a>.
-</p>
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span> Sepolia Testnet</span>
+    <h1>Mirrux Web3 Demo</h1>
+    <p class="lede">
+      Dashboard đọc trực tiếp state on-chain của các contract Mirrux và cho phép gửi transaction
+      thật (approve + deposit vào ERC-4626 vault). Contract source &amp; verify link xem tại
+      <a href="https://github.com/vuduylong1999/Mirrux" target="_blank" rel="noopener">GitHub repo</a>.
+    </p>
+  </header>
 
-<div class="card">
-  <div class="row">
-    <button id="connectBtn">Kết nối MetaMask</button>
-    <span id="account" class="addr muted">chưa kết nối</span>
+  <div class="card">
+    <div class="wallet-row">
+      <div class="wallet-status">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="account" class="addr">chưa kết nối ví</span>
+      </div>
+      <button id="connectBtn" class="btn-primary">Kết nối MetaMask</button>
+    </div>
   </div>
-</div>
 
-<div class="card">
-  <h3>Đọc state on-chain (read-only, không cần ví)</h3>
-  <div class="row">MRX total supply: <b id="mrxSupply">…</b></div>
-  <div class="row">Vault (vMRX) total assets: <b id="vaultAssets">…</b> MRX</div>
-  <div class="row">Vault total shares: <b id="vaultShares">…</b> vMRX</div>
-  <div class="row">Tỷ giá 1 vMRX = <b id="vaultRate">…</b> MRX</div>
-</div>
-
-<div class="card">
-  <h3>Số dư của ví bạn</h3>
-  <div class="row">MRX: <b id="myMrx">—</b></div>
-  <div class="row">vMRX: <b id="myVmrx">—</b></div>
-</div>
-
-<div class="card">
-  <h3>Gửi transaction thật: Deposit MRX vào Vault</h3>
-  <p class="muted">2 bước on-chain: approve (cho phép vault rút MRX) rồi deposit. Cần ví có MRX testnet trên Sepolia.</p>
-  <div class="row">
-    <input id="depositAmount" type="number" placeholder="số MRX" min="0" step="any" />
-    <button id="approveBtn" disabled>1. Approve</button>
-    <button id="depositBtn" disabled>2. Deposit</button>
+  <div class="card">
+    <h3>📊 On-chain state</h3>
+    <p class="hint">Read-only — không cần ví, gọi thẳng RPC công khai.</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">MRX total supply</div><div class="value" id="mrxSupply">…</div></div>
+      <div class="stat"><div class="label">Vault total assets</div><div class="value" id="vaultAssets">… <span class="unit">MRX</span></div></div>
+      <div class="stat"><div class="label">Vault total shares</div><div class="value" id="vaultShares">… <span class="unit">vMRX</span></div></div>
+      <div class="stat"><div class="label">Tỷ giá 1 vMRX</div><div class="value" id="vaultRate">… <span class="unit">MRX</span></div></div>
+    </div>
   </div>
-  <div id="log" class="muted"></div>
+
+  <div class="card">
+    <h3>👛 Số dư ví của bạn</h3>
+    <div class="stat-grid">
+      <div class="stat"><div class="label">MRX</div><div class="value" id="myMrx">—</div></div>
+      <div class="stat"><div class="label">vMRX</div><div class="value" id="myVmrx">—</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚡ Deposit vào Vault</h3>
+    <p class="hint">2 bước on-chain thật: approve (cho phép vault rút MRX) rồi deposit. Cần ví có MRX testnet trên Sepolia.</p>
+    <div class="deposit-row">
+      <input id="depositAmount" type="number" placeholder="số MRX" min="0" step="any" />
+      <button id="approveBtn" class="btn-secondary" disabled>1. Approve</button>
+      <button id="depositBtn" class="btn-primary" disabled>2. Deposit</button>
+    </div>
+    <div id="log"></div>
+  </div>
+
+  <footer>Mirrux — portfolio project, Solidity + Hardhat. Không phải sản phẩm production.</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
 <script>
 const SEPOLIA_CHAIN_ID = "0xaa36a7";
-const PUBLIC_RPC = "https://rpc.sepolia.org";
+const PUBLIC_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 
 const MRX_ADDRESS = "0x7105cC28Df810dd63bdba3aF30D18f2187657631";
 const VAULT_ADDRESS = "0x78C87519D32d0126b3d82955b412f4371783B94C";
@@ -88,11 +198,21 @@ const vaultRead = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, readProvider);
 let signer = null;
 let account = null;
 
-const log = (msg) => {
+const short = (addr) => addr.slice(0, 6) + "…" + addr.slice(-4);
+
+const log = (msg, cls) => {
   const el = document.getElementById("log");
-  el.textContent += msg + "\n";
+  const line = document.createElement("div");
+  if (cls) line.className = cls;
+  line.textContent = msg;
+  el.appendChild(line);
   el.scrollTop = el.scrollHeight;
 };
+
+function setBusy(btn, busy, labelBusy, labelIdle) {
+  btn.disabled = busy;
+  btn.textContent = busy ? labelBusy : labelIdle;
+}
 
 async function loadPublicStats() {
   const [supply, decimals, vaultAssets, vaultShares] = await Promise.all([
@@ -102,12 +222,12 @@ async function loadPublicStats() {
     vaultRead.totalSupply(),
   ]);
   document.getElementById("mrxSupply").textContent = ethers.formatUnits(supply, decimals);
-  document.getElementById("vaultAssets").textContent = ethers.formatUnits(vaultAssets, decimals);
-  document.getElementById("vaultShares").textContent = ethers.formatUnits(vaultShares, decimals);
+  document.getElementById("vaultAssets").firstChild.textContent = ethers.formatUnits(vaultAssets, decimals) + " ";
+  document.getElementById("vaultShares").firstChild.textContent = ethers.formatUnits(vaultShares, decimals) + " ";
 
   const oneShare = ethers.parseUnits("1", decimals);
   const rate = vaultShares > 0n ? await vaultRead.convertToAssets(oneShare) : oneShare;
-  document.getElementById("vaultRate").textContent = ethers.formatUnits(rate, decimals);
+  document.getElementById("vaultRate").firstChild.textContent = ethers.formatUnits(rate, decimals) + " ";
 }
 
 async function loadMyBalances() {
@@ -150,47 +270,70 @@ async function connect() {
     alert("Cần cài MetaMask để gửi transaction (phần đọc state vẫn hoạt động bình thường).");
     return;
   }
-  await ensureSepolia();
-  const browserProvider = new ethers.BrowserProvider(window.ethereum);
-  const accounts = await browserProvider.send("eth_requestAccounts", []);
-  account = accounts[0];
-  signer = await browserProvider.getSigner();
+  const btn = document.getElementById("connectBtn");
+  setBusy(btn, true, "Đang kết nối…", "Kết nối MetaMask");
+  try {
+    await ensureSepolia();
+    const browserProvider = new ethers.BrowserProvider(window.ethereum);
+    const accounts = await browserProvider.send("eth_requestAccounts", []);
+    account = accounts[0];
+    signer = await browserProvider.getSigner();
 
-  document.getElementById("account").textContent = account;
-  document.getElementById("approveBtn").disabled = false;
-  document.getElementById("depositBtn").disabled = false;
-  await loadMyBalances();
+    const accountEl = document.getElementById("account");
+    accountEl.textContent = short(account);
+    accountEl.title = account;
+    document.getElementById("statusDot").classList.add("on");
+    document.getElementById("approveBtn").disabled = false;
+    document.getElementById("depositBtn").disabled = false;
+    btn.textContent = "Đã kết nối";
+    await loadMyBalances();
+  } catch (err) {
+    setBusy(btn, false, "", "Kết nối MetaMask");
+    throw err;
+  }
 }
 
 async function approve() {
+  const btn = document.getElementById("approveBtn");
   const decimals = await mrxRead.decimals();
   const amount = ethers.parseUnits(document.getElementById("depositAmount").value || "0", decimals);
   const mrxWrite = new ethers.Contract(MRX_ADDRESS, ERC20_ABI, signer);
-  log(`Sending approve(${amount})...`);
-  const tx = await mrxWrite.approve(VAULT_ADDRESS, amount);
-  log(`tx: ${tx.hash}`);
-  await tx.wait();
-  log("Approve confirmed.");
+  setBusy(btn, true, "Đang approve…", "1. Approve");
+  try {
+    log(`Sending approve(${amount})...`);
+    const tx = await mrxWrite.approve(VAULT_ADDRESS, amount);
+    log(`tx: ${tx.hash}`);
+    await tx.wait();
+    log("Approve confirmed.", "ok");
+  } finally {
+    setBusy(btn, false, "", "1. Approve");
+  }
 }
 
 async function deposit() {
+  const btn = document.getElementById("depositBtn");
   const decimals = await mrxRead.decimals();
   const amount = ethers.parseUnits(document.getElementById("depositAmount").value || "0", decimals);
   const vaultWrite = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, signer);
-  log(`Sending deposit(${amount})...`);
-  const tx = await vaultWrite.deposit(amount, account);
-  log(`tx: ${tx.hash}`);
-  await tx.wait();
-  log("Deposit confirmed.");
-  await loadMyBalances();
-  await loadPublicStats();
+  setBusy(btn, true, "Đang deposit…", "2. Deposit");
+  try {
+    log(`Sending deposit(${amount})...`);
+    const tx = await vaultWrite.deposit(amount, account);
+    log(`tx: ${tx.hash}`);
+    await tx.wait();
+    log("Deposit confirmed.", "ok");
+    await loadMyBalances();
+    await loadPublicStats();
+  } finally {
+    setBusy(btn, false, "", "2. Deposit");
+  }
 }
 
-document.getElementById("connectBtn").addEventListener("click", () => connect().catch((e) => log("Error: " + e.message)));
-document.getElementById("approveBtn").addEventListener("click", () => approve().catch((e) => log("Error: " + e.message)));
-document.getElementById("depositBtn").addEventListener("click", () => deposit().catch((e) => log("Error: " + e.message)));
+document.getElementById("connectBtn").addEventListener("click", () => connect().catch((e) => log("Error: " + e.message, "err")));
+document.getElementById("approveBtn").addEventListener("click", () => approve().catch((e) => log("Error: " + e.message, "err")));
+document.getElementById("depositBtn").addEventListener("click", () => deposit().catch((e) => log("Error: " + e.message, "err")));
 
-loadPublicStats().catch((e) => log("Error loading stats: " + e.message));
+loadPublicStats().catch((e) => log("Error loading stats: " + e.message, "err"));
 </script>
 
 </body>
